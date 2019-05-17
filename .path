@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [[ -z $TMUX ]]; then
+    export GOPATH=/home/jack/go
+    export PATH=/usr/local/go/bin:$PATH
+    export PATH=$GOPATH/bin:$PATH
+    export PATH=$PATH:/opt/microchip/xc16/bin
+fi
+

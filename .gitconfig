@@ -1,0 +1,265 @@
+[alias]
+
+    # shorter commands
+    a   = commit --amend
+    br  = branch
+    c   = commit
+    ca  = !git add -A && git commit             # Commit all changes.
+    co  = checkout
+    cp  = cherry-pick
+    # d   = diff -- . ':!*package-lock.json' ':!*yarn.lock'
+    # dc  = diff --cached -- . ':!*package-lock.json' ':!*yarn.lock'
+    # Show the diff between the latest commit and the current state
+    d = !"git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat"
+    # `git di $number` shows the diff between the state `$number` revisions ago and the current state
+    di = !"d() { git diff --patch-with-stat HEAD~$1; }; git diff-index --quiet HEAD -- || clear; d"
+    f   = fetch
+    g   = log --graph --pretty=custom           # Show custom graph.
+    git = !exec git                             # Allow `$ git git git...`
+    l   = log --pretty=custom                   # Show custom log.
+    lc  = shortlog --email --numbered --summary # List contributors.
+    p   = push
+    r   = rebase
+    s   = status -s                             # View the current working tree status using the short format
+
+    # Show verbose output about tags, branches, or remotes
+    tags = tag -l
+    branches = branch -v
+    remotes = remote -vv
+
+    # My aliases (stc)
+    unstage = reset HEAD --
+    uncommit = reset --soft HEAD^
+    carmh = commit --amend --reuse-message=HEAD
+    graph = log --graph --oneline --decorate --all
+    graph2 = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --all
+    graphtime = log --graph --all --format=format:'%C(bold yellow)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(bold white)- %an%C(reset)' --abbrev-commit
+    lg1 = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)'
+    lg1-auto = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)'
+    lg2 = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)' --all
+    lg = !"git lg1"
+    lg-all = !"git lg1 --all"
+    lg-short = !"git lg1 --simplify-by-decoration"
+    aliases = config --get-regexp '^alias\\.'
+
+    # List contributors with number of commits
+    contributors = shortlog --email --summary --numbered
+
+    # Credit an author on the latest commit
+    credit = "!f() { \
+        if [ -n \"$1\" ] && [ -n \"$2\" ]; then \
+            git commit --amend --author \"$1 <$2>\" -C HEAD; \
+        fi \
+    }; f"
+
+    # Credit a co-author on the latest commit
+    #
+    # https://help.github.com/en/articles/creating-a-commit-with-multiple-authors
+    # https://help.github.com/en/articles/creating-a-commit-on-behalf-of-an-organization
+    credit-co-author = "!f() { \
+        if [ -n \"$1\" ] && [ -n \"$2\" ]; then \
+            GIT_EDITOR=\"git interpret-trailers --in-place --trailer='Co-authored-by: $1 <$2>'\" git commit --amend; \
+        fi \
+    }; f"
+
+    # Interactive rebase with the given number of latest commits
+    reb = "!r() { git rebase -i HEAD~$1; }; r"
+
+    # Find commits by source code
+    fc = "!f() { git log --pretty=custom --decorate --date=short -S$1; }; f"
+
+    # Find commits by commit message
+    fm = "!f() { git log --pretty=custom --decorate --date=short --grep=$1; }; f"
+
+    # List remote branches
+    lrb = "!f() { \
+        remote="${1:-origin}"; \
+        git ls-remote --heads "$remote"; \
+    }; f"
+
+    # Merge GitHub pull request on top of the current branch or,
+    # if a branch name is specified, on top of the specified branch.
+    mpr = "!f() { \
+        declare currentBranch=\"$(git symbolic-ref --short HEAD)\"; \
+        declare branch=\"${2:-$currentBranch}\"; \
+        if [ $(printf \"%s\" \"$1\" | grep '^[0-9]\\+$' > /dev/null; printf $?) -eq 0 ]; then \
+            git fetch origin refs/pull/$1/head:pr/$1 && \
+            git checkout -B $branch && \
+            git rebase $branch pr/$1 && \
+            git checkout -B $branch && \
+            git merge pr/$1 && \
+            git branch -D pr/$1 && \
+            git commit --amend -m \"$(git log -1 --pretty=%B)\n\nClose #$1\"; \
+        fi \
+    }; f"
+
+    # Remove the tag with the specified tag name if
+    # exists and tag the latest commit with that name.
+    retag = "!f() { \
+        git tag -d "$1" &> /dev/null; \
+        git tag $1; \
+    }; f"
+
+    # Remove last commits (by default it removes the last commit).
+    rlc = "!f() { \
+        declare n=\"${1:-1}\"; \
+        git reset --hard \"HEAD~$n\"; \
+    }; f"
+
+    # Undo last commits (by default it undoes the last commit).
+    ulc = "!f() { \
+        declare n=\"${1:-1}\"; \
+        git reset --soft \"HEAD~$n\"; \
+    }; f"
+
+    # Create an unattached branch with no history
+    emptybranch = "!f() { \
+        if [ $1 ]; then \
+            git symbolic-ref HEAD refs/heads/$1 && \
+            rm .git/index && \
+            git clean -fdx;  \
+        fi \
+    }; f"
+
+    # from seth vargo https://gist.github.com/sethvargo/6b2f7b592853381690bfe3bd00947e8f
+    unreleased = "!f() { git fetch --tags && git diff $(git tag | tail -n 1); }; f"
+    up = !git pull origin master && git remote prune origin && git submodule update --init --recursive
+    undo = !git reset HEAD~1 --mixed
+    top = !git log --format=format:%an | sort | uniq -c | sort -r | head -n 20
+
+    # from trevor bramble https://twitter.com/TrevorBramble/status/774292970681937920
+    alias=!git config -l | grep ^alias | cut -c 7- | sort
+
+[apply]
+
+    # Detect whitespace errors when applying a patch
+    whitespace = fix
+
+[core]
+
+    # Use custom `.gitignore` and `.gitattributes`
+    excludesfile = ~/.gitignore
+    attributesfile = ~/.gitattributes
+
+    # Treat spaces before tabs and all kinds of trailing whitespace as an error
+    # [default] trailing-space: looks for spaces at the end of a line
+    # [default] space-before-tab: looks for spaces before tabs at the beginning of a line
+    whitespace = space-before-tab,-indent-with-non-tab,trailing-space
+
+    editor = vim
+
+[color]
+
+    # Use colors in Git commands that are capable of colored output when
+    # outputting to the terminal. (This is the default setting in Git ≥ 1.8.4.)
+    ui = auto
+
+[color "branch"]
+
+    current = yellow reverse
+    local = yellow
+    remote = green
+
+[color "diff"]
+
+    meta = yellow bold
+    frag = magenta bold # line info
+    old = red # deletions
+    new = green # additions
+    oldMoved = blue
+    newMoved = cyan
+
+[color "status"]
+
+    added = yellow
+    changed = green
+    untracked = cyan
+
+[diff]
+
+    # Show blocks of moved text of at least 20
+    # alphanumeric characters differently than adds/deletes.
+    #
+    # https://git-scm.com/docs/git-diff#git-diff-zebra
+    colorMoved = zebra
+
+    # Detect copies as well as renames
+    renames = copies
+
+[help]
+
+    # Automatically correct and execute mistyped commands
+    autocorrect = 1
+
+[merge]
+
+    # Include summaries of merged commits in newly created merge commit messages
+    log = true
+
+[pretty]
+
+    custom = "%C(magenta)%h%C(red)%d %C(yellow)%ar %C(green)%s %C(yellow)(%an)"
+    #                     │        │            │            │             └─ author name
+    #                     │        │            │            └─ message
+    #                     │        │            └─ date (relative)
+    #                     │        └─ decorations (branch, heads or tags)
+    #                     └─ hash (abbreviated)
+
+[push]
+    # change to maching for machines with older versions of git 1.x.x
+    default = simple
+
+[user]
+
+    # Do not guess the user's identity.
+    # https://github.com/git/git/blob/90f7b16b3adc78d4bbabbd426fb69aa78c714f71/Documentation/config.txt#L2847-L2855
+    useConfigOnly = true
+
+    # [!] DO NOT store sensitive information such as the Git user
+    # credentials (`name` / `email`), or things such as the `signingkey`
+    # in this file, add them in `~/.gitconfig.local`!
+    #
+    # See also: https://github.com/alrra/dotfiles#gitconfiglocal
+
+[url "git@github.com:github"]
+
+    insteadOf = "https://github.com/github"
+    insteadOf = "github:github"
+    insteadOf = "git://github.com/github"
+
+[url "git@github.com:"]
+
+    pushInsteadOf = "https://github.com/"
+    pushInsteadOf = "github:"
+    pushInsteadOf = "git://github.com/"
+
+[url "git://github.com/"]
+
+    insteadOf = "github:"
+
+[url "git@gist.github.com:"]
+
+    insteadOf = "gst:"
+    pushInsteadOf = "gist:"
+    pushInsteadOf = "git://gist.github.com/"
+
+[url "git://gist.github.com/"]
+
+    insteadOf = "gist:"
+
+# Uncomment if you want fetch to also get all github pull requests, this is rather
+# large on big repos.
+#[remote "origin"]
+    #fetch = +refs/pull/*/head:refs/remotes/origin/pull/*
+
+[include]
+
+    # Load local configs.
+    # https://git-scm.com/docs/git-config#_includes
+    #
+    # [!] The following needs to remain at the end of this file in
+    #     order to allow any of the above configs to be overwritten
+    #     by the local ones
+
+    path = ~/.gitconfig.local
+
