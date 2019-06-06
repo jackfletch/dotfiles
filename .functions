@@ -138,7 +138,7 @@ openimage() {
     local file
     file=$(basename "$1")
 
-    feh -q "$types" --auto-zoom \
+    feh -q $types --auto-zoom \
         --sort filename --borderless \
         --scale-down --draw-filename \
         --image-bg black \
