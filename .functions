@@ -132,7 +132,7 @@ repo() {
 
 # Use feh to nicely view images
 openimage() {
-    local types='*.jpg *.JPG *.png *.PNG *.gif *.GIF *.jpeg *.JPEG'
+    local types='*.jpg *.png *.gif *.jpeg'
 
     cd "$(dirname "$1")" || exit
     local file
