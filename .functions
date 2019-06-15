@@ -134,6 +134,7 @@ repo() {
 openimage() {
     local types='*.jpg *.png *.gif *.jpeg'
 
+    cwd=$(pwd)
     cd "$(dirname "$1")" || exit
     local file
     file=$(basename "$1")
@@ -143,6 +144,7 @@ openimage() {
         --scale-down --draw-filename \
         --image-bg black \
         --start-at "$file"
+    cd "$cwd"
 }
 
 # check if uri is up
