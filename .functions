@@ -147,6 +147,21 @@ openimage() {
     cd "$cwd"
 }
 
+# Print man page(s) to pdf
+man2pdf() {
+    if [ "$#" -eq 0 ]
+    then
+        echo "Usage: man2pdf MANPAGE..." >&2
+        return 1
+    fi
+
+    mkdir -p "$HOME/man"
+    for i; do
+        man -Tpdf "$i" > "$HOME/man/$i.pdf"
+        echo "Printing $i man page to $HOME/man/$i.pdf"
+    done
+}
+
 # check if uri is up
 isup() {
     local uri=$1
