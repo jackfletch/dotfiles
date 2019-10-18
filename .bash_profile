@@ -37,6 +37,11 @@ if type _git &> /dev/null; then
     complete -o default -o nospace -F _git g;
 fi;
 
+# Enable tab completion for `k` by marking it as an alias for `kubectl`
+if type __start_kubectl &> /dev/null; then
+    complete -F __start_kubectl k
+fi;
+
 # Add tab completion for SSH hostnames based on ~/.ssh/config, ignoring wildcards
 [ -e "$HOME/.ssh/config" ] && complete -o "default" -o "nospace" -W "$(grep "^Host" ~/.ssh/config | grep -v "[?*]" | cut -d " " -f2- | tr ' ' '\n')" scp sftp ssh;
 

@@ -17,6 +17,7 @@ alias dl="cd ~/Downloads"
 alias dt="cd ~/Desktop"
 alias w="cd ~/workspace"
 alias g="git"
+alias k="kubectl"
 export THESISPATH="/home/jack/workspace/senior-design/thesis/"
 
 # Detect which `ls` flavor is in use
