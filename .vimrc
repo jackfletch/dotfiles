@@ -175,6 +175,7 @@ if has("autocmd")
     " needed, and have indentation at 8 chars to be sure that all indents are tabs
     " (despite the mappings later):
     autocmd FileType make set noexpandtab shiftwidth=8 softtabstop=0
+    autocmd Filetype gitcommit setlocal textwidth=72
 endif
 
 " key bindings
