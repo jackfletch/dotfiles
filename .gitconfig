@@ -1,14 +1,13 @@
 [alias]
 
     # shorter commands
-    a   = commit --amend
     br  = branch
     c   = commit
-    ca  = !git add -A && git commit             # Commit all changes.
+    ca  = commit --amend
     co  = checkout
     cp  = cherry-pick
-    # d   = diff -- . ':!*package-lock.json' ':!*yarn.lock'
-    # dc  = diff --cached -- . ':!*package-lock.json' ':!*yarn.lock'
+    dmin= diff -- . ':!*package-lock.json' ':!*yarn.lock'
+    dc  = diff --cached -- . ':!*package-lock.json' ':!*yarn.lock'
     # Show the diff between the latest commit and the current state
     d = !"git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat"
     # `git di $number` shows the diff between the state `$number` revisions ago and the current state
@@ -17,7 +16,6 @@
     g   = log --graph --pretty=custom           # Show custom graph.
     git = !exec git                             # Allow `$ git git git...`
     l   = log --pretty=custom                   # Show custom log.
-    lc  = shortlog --email --numbered --summary # List contributors.
     p   = push
     r   = rebase
     s   = status -s                             # View the current working tree status using the short format
@@ -28,18 +26,15 @@
     remotes = remote -vv
 
     # My aliases (stc)
+    ap = add -p
     unstage = reset HEAD --
     uncommit = reset --soft HEAD^
     carmh = commit --amend --reuse-message=HEAD
+    cane = commit --amend --no-edit
     graph = log --graph --oneline --decorate --all
-    graph2 = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --all
-    graphtime = log --graph --all --format=format:'%C(bold yellow)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(bold white)- %an%C(reset)' --abbrev-commit
-    lg1 = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)'
-    lg1-auto = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)'
-    lg2 = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)' --all
-    lg = !"git lg1"
-    lga = !"git lg1 --all"
-    lg-short = !"git lg1 --simplify-by-decoration"
+    lg = log --graph --pretty=custom
+    lga = !"git lg --all"
+    lg-short = !"git lga --simplify-by-decoration"
     aliases = config --get-regexp '^alias\\.'
 
     # List contributors with number of commits
@@ -198,12 +193,12 @@
 
 [pretty]
 
-    custom = "%C(magenta)%h%C(red)%d %C(yellow)%ar %C(green)%s %C(yellow)(%an)"
-    #                     │        │            │            │             └─ author name
-    #                     │        │            │            └─ message
-    #                     │        │            └─ date (relative)
-    #                     │        └─ decorations (branch, heads or tags)
-    #                     └─ hash (abbreviated)
+    custom = "%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)"
+    #                       │                            │                      │                          │                   └─ decorations (branch, heads, or tags)
+    #                       │                            │                      │                          └─ author name
+    #                       │                            │                      └─ subject of message (relative)
+    #                       │                            └─ author date (relative)
+    #                       └─ hash (abbreviated)
 
 [push]
     # change to maching for machines with older versions of git 1.x.x
@@ -219,7 +214,7 @@
     # credentials (`name` / `email`), or things such as the `signingkey`
     # in this file, add them in `~/.gitconfig.local`!
     #
-    # See also: https://github.com/alrra/dotfiles#gitconfiglocal
+    # See also: https://github.com/jackfletch/dotfiles#gitconfiglocal
 
 [url "git@github.com:github"]
 
@@ -232,6 +227,7 @@
     pushInsteadOf = "https://github.com/"
     pushInsteadOf = "github:"
     pushInsteadOf = "git://github.com/"
+    insteadOf = "https://github.com/"
 
 [url "git://github.com/"]
 
