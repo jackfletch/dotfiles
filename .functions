@@ -21,7 +21,27 @@ tmpd() {
 
 # Search for text within the current directory
 qt() {
-    grep -ir --color=always "$*" --exclude-dir=".git" --exclude-dir="node_modules" . | less -RX
+    # arrays of directories and file patterns to exclude:
+    local excludedDirs=(".git" "node_modules" ".next")
+    local excludedFiles=("*bootstrap*")
+
+    local stringDirs=()
+    local stringFiles=()
+    for dir in "${excludedDirs[@]}"; do
+        stringDirs+=($(printf -- "--exclude-dir=%s" $dir))
+    done
+    unset dir
+
+    for file in "${excludedFiles[@]}"; do
+        stringFiles+=($(printf -- "--exclude=%s" $file))
+    done
+    unset file
+
+    grep -ir --color=always "$1" "${@:2}" "${stringDirs[@]}" "${stringFiles[@]}" | less -RX
+    #     ││                  │     │        │                  └─ ignore these file patterns (--exclude=)
+    #     ││                  │     │        └─ ignore these directories (--exclude-dir=)
+    #     ││                  │     └─ passed arguments
+    #     ││                  └─ search pattern
     #     │└─ search all files under each directory, recursively
     #     └─ ignore case
 }
@@ -252,5 +272,3 @@ fi
     go list -e -f '{{join .Deps "\n"}}' ./... | xargs go list -e -f '{{if not .Standard}}{{.ImportPath}}{{end}}'
     )
 }
-
-
