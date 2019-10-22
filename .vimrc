@@ -195,6 +195,8 @@ inoremap <C-k> <Esc>:m .-2<CR>==gi
 vnoremap <C-j> :m '>+1<CR>gv=gv
 vnoremap <C-k> :m '<-2<CR>gv=gv
 
+set background=dark
+
 if filereadable(glob("~/.vimrc.local"))
     source ~/.vimrc.local
 endif
