@@ -176,6 +176,7 @@ if has("autocmd")
     " (despite the mappings later):
     autocmd FileType make set noexpandtab shiftwidth=8 softtabstop=0
     autocmd Filetype gitcommit setlocal textwidth=72
+    autocmd Filetype gitcommit,gitrebae setlocal nomodeline
 endif
 
 " key bindings
