@@ -1,41 +1,44 @@
 [alias]
 
-    # shorter commands
-    br  = branch
-    c   = commit
-    ca  = commit --amend
-    co  = checkout
-    cp  = cherry-pick
+    # Allow `git git git...`
+    git = !exec git
+
+    # Simple aliases
+    ap = add -p
+    br = branch
+    c = commit
+    ca = commit --amend
+    cane = commit --amend --no-edit
+    carmh = commit --amend --reuse-message=HEAD
+    co = checkout
+    cp = cherry-pick
     dmin= diff -- . ':!*package-lock.json' ':!*yarn.lock'
-    dc  = diff --cached -- . ':!*package-lock.json' ':!*yarn.lock'
+    dc = diff --cached -- . ':!*package-lock.json' ':!*yarn.lock'
     # Show the diff between the latest commit and the current state
     d = !"git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat"
-    # `git di $number` shows the diff between the state `$number` revisions ago and the current state
-    di = !"d() { git diff --patch-with-stat HEAD~$1; }; git diff-index --quiet HEAD -- || clear; d"
-    f   = fetch
-    g   = log --graph --pretty=custom           # Show custom graph.
-    git = !exec git                             # Allow `$ git git git...`
-    l   = log --pretty=custom                   # Show custom log.
-    p   = push
-    r   = rebase
-    s   = status -s                             # View the current working tree status using the short format
+    # `git dn $number` shows the diff between the state `$number` revisions ago and the current state
+    dn = !"d() { git diff --patch-with-stat HEAD~$1; }; git diff-index --quiet HEAD -- || clear; d"
+    f = fetch
+    p = push
+    r = rebase
+    s = status -s                               # View the current working tree status using the short format
 
-    # Show verbose output about tags, branches, or remotes
-    tags = tag -l
-    branches = branch -v
-    remotes = remote -vv
-
-    # My aliases (stc)
-    ap = add -p
-    unstage = reset HEAD --
-    uncommit = reset --soft HEAD^
-    carmh = commit --amend --reuse-message=HEAD
-    cane = commit --amend --no-edit
-    graph = log --graph --oneline --decorate --all
+    # Colorful logs and graphs
+    g = log --graph --pretty=custom             # Show custom graph.
+    l = log --pretty=custom                     # Show custom log.
     lg = log --graph --pretty=custom
     lga = !"git lg --all"
     lg-short = !"git lga --simplify-by-decoration"
+
+    # Show verbose output about branches, remotes, or tags
+    branches = branch -v
+    remotes = remote -vv
+    tags = tag -l
+
+    # Useful named commands
     aliases = config --get-regexp '^alias\\.'
+    unstage = reset HEAD --
+    uncommit = reset --soft HEAD^
 
     # List contributors with number of commits
     contributors = shortlog --email --summary --numbered
