@@ -441,6 +441,23 @@ if has("autocmd")
         " commit messages
         autocmd Filetype gitcommit,gitrebase setlocal nomodeline
 
+        " Color gitcommit files the same as git status
+        autocmd Filetype gitcommit,gitrebase
+            \ hi gitcommitSummary cterm=NONE ctermfg=14 ctermbg=8
+        autocmd Filetype gitcommit,gitrebase
+            \ hi gitcommitOverflow cterm=NONE ctermfg=10 ctermbg=8
+        autocmd Filetype gitcommit,gitrebase
+            \ hi gitcommitBranch cterm=NONE ctermfg=7 ctermbg=8
+        autocmd Filetype gitcommit,gitrebase
+            \ hi gitcommitSelectedType cterm=NONE ctermfg=3 ctermbg=8
+        autocmd Filetype gitcommit,gitrebase
+            \ hi gitcommitSelectedFile cterm=NONE ctermfg=3 ctermbg=8
+        autocmd Filetype gitcommit,gitrebase
+            \ hi gitcommitDiscardedType cterm=NONE ctermfg=2 ctermbg=8
+        autocmd Filetype gitcommit,gitrebase
+            \ hi gitcommitDiscardedFile cterm=NONE ctermfg=2 ctermbg=8
+        autocmd Filetype gitcommit,gitrebase
+            \ hi gitcommitUntrackedFile cterm=NONE ctermfg=6 ctermbg=8
     augroup END
 endif
 
