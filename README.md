@@ -97,7 +97,7 @@ If you decide to fork this project, do not forget to substitute my username with
 - `.tmux.conf` - tmux
 - `.tmux` - tmux "profiles"
 - `.vim`, `.vimrc`, `.vimrc.local` - vim
-- `.inputrc` - input prompt (`readline`)
+- `.inputrc` - input prompt behavior (`readline`)
 
 #### Bash
 
