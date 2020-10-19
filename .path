@@ -1,5 +1,3 @@
-#!/bin/bash
-
 if [[ -z $TMUX ]]; then
     export GOPATH=/home/jack/go
     export PATH=/usr/local/go/bin:$PATH

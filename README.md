@@ -10,7 +10,7 @@ Clone the respository into `~/dotfiles`.
 You _should_ technically be able to clone to wherever you want, since I tried to avoid relative paths in the setup process.
 However, I use `~/dotfiles` and everything herein has been tested with respect to that.
 
-```bash
+```sh
 git clone https://github.com/jackfletch/dotfiles.git
 cd dotfiles
 # run setup script that has yet to be written
@@ -45,13 +45,11 @@ There are settings that shouldn't be committed to a public git repo, because the
 These `dotfiles` can be easily extended to suit these additional _local_ settings.
 The following files, if they exist, will be sourced after their associated non-local counterparts, allowing their contents to add to or overwrite the default configuration:
 
-#### `~/.bash.local`
+#### `~/.local`
 
 Add custom aliases, exports, etc.:
 
-```bash
-#!/bin/bash
-
+```sh
 # Set local aliases
 alias starwars="telnet towel.blinkenlights.nl"
 
@@ -88,7 +86,7 @@ nnoremap <silent> gc xph
 
 ### Fork
 
-If you decide to fork this project, do not forget to substitute my username with your own in places such as the install script that has yet to be written.
+If you decide to fork this project, do not forget to substitute my username with your own where applicable.
 
 ## File Overview
 
@@ -101,12 +99,12 @@ If you decide to fork this project, do not forget to substitute my username with
 
 #### Bash
 
-- `.bash_aliases` - aliases
-- `.bash_exports` - exports
+- `.aliases` - aliases
 - `.bash_profile` - sources other files, sets shell options and autocompletion
-- `.bash_prompt` - prompt
+- `.exports` - exports
+- `.prompt` - prompt
 - `.bashrc` - sources `.bash_profile`
-- `.bash.local` - optional local config
+- `.local` - optional local config
 - `.functions` - functions
 - `.path` - path
 
@@ -116,11 +114,11 @@ Bash file sourcing chain:
 .bashrc
 └── .bash_profile
     ├── .path
-    ├── .bash_prompt
-    ├── .bash_exports
-    ├── .bash_aliases
+    ├── .prompt
+    ├── .exports
+    ├── .aliases
     ├── .functions
-    └── .bash.local
+    └── .local
 ```
 
 #### `git`
