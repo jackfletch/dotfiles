@@ -50,8 +50,6 @@ export HISTTIMEFORMAT='%F %T '
 export HISTCONTROL="erasedups:ignoreboth"
 export HISTSIZE=50000000
 export HISTFILESIZE=$HISTSIZE
-# Don't record some commands in history
-export HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
 
 # keep history up to date, across sessions, in realtime
 #  http://unix.stackexchange.com/a/48113
