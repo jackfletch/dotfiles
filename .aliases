@@ -90,4 +90,3 @@ alias show-desktop-icons="gsettings set org.gnome.desktop.background show-deskto
 
 # Print each PATH entry on a separate line
 alias echopath='echo -e ${PATH//:/\\n}'
-

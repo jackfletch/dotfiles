@@ -10,25 +10,48 @@
 #     https://www.tldp.org/HOWTO/Bash-Prompt-HOWTO/bash-prompt-escape-sequences.html
 #     http://www.cyberciti.biz/tips/howto-linux-unix-bash-shell-setup-prompt.html
 
-
 if [[ $COLORTERM = gnome-* && $TERM = xterm ]] && infocmp gnome-256color >/dev/null 2>&1; then
     export TERM='gnome-256color';
 elif infocmp xterm-256color >/dev/null 2>&1; then
     export TERM='xterm-256color';
 fi;
 
-prompt_git() {
-    local s=""
+if [ -n "$ZSH_VERSION" ]; then
+    setopt PROMPT_SUBST
+    export RPROMPT=
+fi;
+
+is_in_git_repository() {
+    [ $(git rev-parse --is-inside-work-tree &>/dev/null; printf "%s" $?) = 0 ]
+}
+
+prompt_git_branch() {
     local branchName=""
 
-    # check if the current directory is in a git repository
-    if [ $(git rev-parse --is-inside-work-tree &>/dev/null; printf "%s" $?) == 0 ]; then
+    if is_in_git_repository ; then
+        # get the short symbolic ref
+        # if HEAD isn't a symbolic ref, get the short SHA
+        # otherwise, just give up
+        branchName="$(git symbolic-ref --quiet --short HEAD 2> /dev/null || \
+                      git rev-parse --short HEAD 2> /dev/null || \
+                      printf "(unknown)")"
+        echo $branchName
+    fi
+}
 
+prompt_git_status() {
+    local s=""
+    local root=""
+
+    if is_in_git_repository ; then
         # check if the current directory is in .git before running git checks
-        if [ "$(git rev-parse --is-inside-git-dir 2> /dev/null)" == "false" ]; then
+        if [ "$(git rev-parse --is-inside-git-dir 2> /dev/null)" = "false" ]; then
 
             # ensure index is up to date
             git update-index --really-refresh  -q &>/dev/null
+
+            # get root of repository
+            root=$(git rev-parse --show-toplevel)
 
             # check for uncommitted changes in the index
             if ! $(git diff --quiet --ignore-submodules --cached); then
@@ -41,7 +64,7 @@ prompt_git() {
             fi
 
             # check for untracked files
-            if [ -n "$(git ls-files --others --exclude-standard)" ]; then
+            if [ -n "$(git ls-files --others --exclude-standard $root)" ]; then
                 s="$s?";
             fi
 
@@ -52,18 +75,9 @@ prompt_git() {
 
         fi
 
-        # get the short symbolic ref
-        # if HEAD isn't a symbolic ref, get the short SHA
-        # otherwise, just give up
-        branchName="$(git symbolic-ref --quiet --short HEAD 2> /dev/null || \
-                      git rev-parse --short HEAD 2> /dev/null || \
-                      printf "(unknown)")"
+        [ -n "$s" ] && s="[$s]"
 
-        [ -n "$s" ] && s=" [$s]"
-
-        printf "%s" "${1}${branchName}${2}${s}"
-    else
-        return
+        echo $s
     fi
 }
 
@@ -103,14 +117,37 @@ else
     colors[purple]="\e[95m";
 fi;
 
-# Wrap color sequences in escaped brackets so bash doesn't count them towards
+# Set variables for special prompt characters.
+if [ -n "$BASH_VERSION" ]; then
+    echo $username;
+    username="\u";
+    hostname="\h";
+    workdir="\w";
+    escapeLeft="\[";
+    escapeRight="\]";
+elif [ -n "$ZSH_VERSION" ]; then
+    echo $username;
+    username="%n";
+    hostname="%m";
+    workdir="%~";
+    escapeLeft="%{";
+    escapeRight="%}";
+fi;
+
+# Wrap color sequences in escaped brackets so shell doesn't count them towards
 # the character length of the prompt. See a detailed explanation here:
 # https://unix.stackexchange.com/a/124409.
-for i in "${!colors[@]}"; do
-    colors[$i]="\[${colors[$i]}\]"
-done
+format_colors() {
+    if [ -n "$ZSH_VERSION" ]; then emulate -L ksh; fi
 
-# Highlight the user name when logged in as root.
+    for i in "${!colors[@]}"; do
+        colors[$i]="$escapeLeft${colors[$i]}$escapeRight"
+    done
+}
+
+format_colors
+
+# Highlight the username when logged in as root.
 if [[ "${USER}" == "root" ]]; then
     userStyle="${colors[red]}";
 else
@@ -124,17 +161,24 @@ else
     hostStyle="${colors[yellow]}";
 fi;
 
+if [ -n "$ZSH_VERSION" ]; then
+    setopt PROMPT_SUBST;
+fi;
+
 # Set the terminal title and prompt.
 PS1="${colors[reset]}"
-PS1+="\[\e]0;\w\007\]"; # terminal title (set to working directory full path)
-PS1+="${userStyle}\u${colors[reset]}"; # username
+# PS1+="\[\e]0;\w\007\]"; # terminal title (set to working directory full path)
+PS1+="${userStyle}$username${colors[reset]}"; # username
 PS1+="@";
-PS1+="${hostStyle}\h${colors[reset]}"; # host
+PS1+="${hostStyle}$hostname${colors[reset]}"; # host
 PS1+=" ";
-PS1+="${colors[green]}[\w]"; # working directory full path
+PS1+="${colors[green]}[$workdir]"; # working directory full path
 PS1+=" ";
-PS1+="\$(prompt_git \"${colors[cyan]}\" \"${colors[blue]}\")"; # git repository details
-PS1+="\n";
+PS1+="${colors[cyan]}"
+PS1+='$(prompt_git_branch)'; # git branch
+PS1+="${colors[blue]} "
+PS1+='$(prompt_git_status)'; # git status
+PS1+=$'\n';
 PS1+="${colors[white]}"
 PS1+=$'\u2446' # prompt icon (⑆)
 PS1+=" ";
@@ -145,3 +189,10 @@ PS2="${colors[yellow]}→ ${colors[reset]}";
 export PS2;
 
 unset colors;
+unset userStyle;
+unset hostStyle;
+unset username;
+unset hostname;
+unset workdir;
+unset escapeRight;
+unset escapeLeft;
