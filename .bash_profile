@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Load dotfiles
-#   ~/.local can be used for settings you don’t want to commit.
+#   ~/.custom can be used for settings you don’t want to commit.
 #   PATH configuration is be done first.
 SOURCE_FILES=(
     ~/.path
@@ -9,7 +9,7 @@ SOURCE_FILES=(
     ~/.exports
     ~/.aliases
     ~/.functions
-    ~/.local
+    ~/.custom
 )
 for file in ${SOURCE_FILES[@]}; do
     [ -r "$file" ] && [ -f "$file" ] && . "$file";

@@ -45,7 +45,7 @@ There are settings that shouldn't be committed to a public git repo, because the
 These `dotfiles` can be easily extended to suit these additional _local_ settings.
 The following files, if they exist, will be sourced after their associated non-local counterparts, allowing their contents to add to or overwrite the default configuration:
 
-#### `~/.local`
+#### `~/.custom`
 
 Add custom aliases, exports, etc.:
 
@@ -104,7 +104,7 @@ If you decide to fork this project, do not forget to substitute my username with
 - `.exports` - exports
 - `.prompt` - prompt
 - `.bashrc` - sources `.bash_profile`
-- `.local` - optional local config
+- `.custom` - optional local config (`.local` has a default use already)
 - `.functions` - functions
 - `.path` - path
 
@@ -118,7 +118,7 @@ Bash file sourcing chain:
     ├── .exports
     ├── .aliases
     ├── .functions
-    └── .local
+    └── .custom
 ```
 
 #### `git`
