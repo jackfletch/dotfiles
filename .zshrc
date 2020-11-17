@@ -17,3 +17,7 @@ for file in ${SOURCE_FILES[@]}; do
     [ -r "$file" ] && [ -f "$file" ] && . "$file";
 done
 unset file
+
+# Search history by prefix with arrow keys
+bindkey "^[[A" history-beginning-search-backward
+bindkey "^[[B" history-beginning-search-forward
