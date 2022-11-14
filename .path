@@ -1,2 +1,4 @@
 if [[ -z $TMUX ]]; then
 fi
+
+export PATH=$HOME/bin:$PATH
