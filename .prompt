@@ -181,7 +181,7 @@ PS1+="${colors_escaped[blue]} "
 PS1+='$(prompt_git_status)'; # git status
 PS1+=$'\n';
 PS1+="${colors_escaped[white]}"
-PS1+=$'\u2446' # prompt icon (⑆)
+PS1+=$(printf '\xE2\x91\x86') # prompt icon (⑆)
 PS1+=" ";
 PS1+="${colors_escaped[reset]}";
 export PS1;
