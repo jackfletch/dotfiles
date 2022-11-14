@@ -55,7 +55,7 @@ fi;
 
 # Enable tab completion for `k` by marking it as an alias for `kubectl`
 if type __start_kubectl &> /dev/null; then
-    complete -F __start_kubectl k
+    complete -o default -F __start_kubectl k
 fi;
 
 # Add tab completion for SSH hostnames based on ~/.ssh/config, ignoring wildcards
