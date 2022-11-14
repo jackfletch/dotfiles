@@ -48,8 +48,9 @@ fi;
 if [ -f /usr/share/bash-completion/completions/git ]; then
     . /usr/share/bash-completion/completions/git;
 fi;
-if type _git &> /dev/null; then
-    complete -o default -o nospace -F _git g;
+if type __git_main &> /dev/null; then
+    # __git_complete g __git_main;
+    __git_complete g git;
 fi;
 
 # Enable tab completion for `k` by marking it as an alias for `kubectl`
