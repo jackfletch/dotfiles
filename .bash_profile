@@ -1,5 +1,20 @@
 #!/bin/bash
 
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+    . /etc/bashrc
+fi
+
+if [ -f /apollo/env/envImprovement/var/bashrc ]; then
+    . /apollo/env/envImprovement/var/bashrc
+fi
+
+for env in SDETools envImprovement AmazonAwsCli OdinTools; do
+    if [[ -d /apollo/env/$env ]]; then
+        export PATH=$PATH:/apollo/env/$env/bin
+    fi
+done
+
 # Load dotfiles
 #   ~/.custom can be used for settings you don't want to commit.
 #   PATH configuration is be done first.

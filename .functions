@@ -272,3 +272,27 @@ fi
     go list -e -f '{{join .Deps "\n"}}' ./... | xargs go list -e -f '{{if not .Standard}}{{.ImportPath}}{{end}}'
     )
 }
+
+# Amazon
+datamart-get() {
+    mcurl -H 'Origin: https://araconsole-na.corp.amazon.com' -s -k "$@"
+}
+
+get-utterance-data () {
+    UTTERANCE_ID=$1
+    STAGE=${2:-prod}
+    CONTENT_TYPE=${3:-HYPRANK}
+    OUTDIR=${4:-DATAMART_DATA/$(echo ${UTTERANCE_ID} | sed 's/:/_/g'|sed 's|/|_|g')/}
+    OUTFILE=${5:-hyprank.json}
+    OUTFILE_PATH=${OUTDIR}/${OUTFILE}
+    if [ "$STAGE" = "prod" ]
+    then
+        COLD_PLAY_URL=https://coldplay.amazon.com
+    else
+        COLD_PLAY_URL=https://coldplay.integ.amazon.com
+    fi
+    mkdir -p ${OUTDIR}
+    CONTENT_URL=${COLD_PLAY_URL}/datamart/content/${CONTENT_TYPE}/data/${UTTERANCE_ID}
+    datamart-get $CONTENT_URL > ${OUTFILE_PATH}
+    echo ${OUTDIR}
+}

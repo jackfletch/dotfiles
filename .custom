@@ -1,0 +1,134 @@
+# Amazon aliases
+# brazil
+alias bb=brazil-build
+
+alias bba='brazil-build apollo-pkg'
+alias bre='brazil-runtime-exec'
+alias brc='brazil-recursive-cmd'
+alias bws='brazil ws'
+alias bwsuse='bws use --gitMode -p'
+alias bwscreate='bws create -n'
+alias brc=brazil-recursive-cmd
+alias bbr='brc brazil-build'
+alias bball='brc --allPackages'
+alias bbb='brc --allPackages brazil-build'
+alias bbra='bbr apollo-pkg'
+
+alias bwsroot='cd $(brazil-path workspace-root 2>/dev/null)'
+
+alias ws='cd $WORKSPACES_ROOT'
+
+# Brazil Java SDK runtime (Corretto 8/OpenJDK 8)
+# export JAVA_HOME=/Library/Java/JavaVirtualMachines/amazon-corretto-8.jdk/Contents/Home
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    alias "midway-command=mwinit -s"
+else
+    alias "midway-command=mwinit -s -o"
+fi
+
+if command -v expect &> /dev/null; then
+    if [[ -f $HOME/mwinit.exp &&  -f $HOME/pwdfile &&  -f $HOME/pinfile ]]; then
+        alias "midway-command=expect $HOME/mwinit.exp"
+    fi
+fi
+
+run_ssh_agent_if_not_running() {
+    pgrep ssh-agent &>/dev/null
+
+    if [ $? -ne 0 ]; then
+        echo "ssh-agent: starting up"
+        ssh-agent > ~/.ssh-agent-info
+        perl -p -i -e 's/^echo/\#echo/g' ~/.ssh-agent-info
+        source ~/.ssh-agent-info
+        ssh-add
+    else
+        echo "ssh-agent: already running"
+        source ~/.ssh-agent-info
+    fi
+}
+
+run_midway_auth() {
+    killall ssh-agent
+
+    eval $(ssh-agent | grep -v "echo Agent pid") && midway-command && ssh-add -D && ssh-add
+}
+
+check_kerberos() {
+    if klist -s; then
+        echo "${colors[green]}Valid Kerberos ticket exists. ${colors[reset]}"
+        return
+    fi
+
+    if [ -f $HOME/kinit.exp ]; then
+        /usr/bin/expect $HOME/kinit.exp
+    else
+        kinit -R
+    fi
+
+    if klist -s; then
+        echo "Renewed the Kerberos Ticket"
+        return
+    fi
+
+    echo "Your Kerberos token expired..."
+    kinit -f -l 168h -r 168h
+    if klist -s; then
+        echo "${colors[green]}Kerberos Ticket Updated. ${colors[reset]}"
+        return
+    else
+        echo "${colors[red]}Invalid Kerberos Ticket. Run kinit -f to get ticket ${colors[reset]}"
+        return
+    fi
+}
+
+is_midway_cert_present () {
+    # https://w.amazon.com/index.php/NextGenMidway/UserGuide#When_does_.22.7E.2F.midway.2Fcookie.22_expire.3F
+    MIDWAY_COOKIE_FILE=~/.midway/cookie
+    if [ ! -f $MIDWAY_COOKIE_FILE ]; then
+        echo "$MIDWAY_COOKIE_FILE not found"
+        return 1
+    fi
+
+    if [ $(grep HttpOnly_midway-auth.amazon.com ${MIDWAY_COOKIE_FILE} | cut -d $'\t' -f 5) -lt $( date  +%s ) ]; then
+        return 1
+    fi
+
+    KEY_FILE="$HOME/.ssh/id_rsa-cert.pub"
+    if [ ! -f $KEY_FILE ]; then
+        echo "$KEY_FILE not found"
+        return 1
+    fi
+
+    CERT=$(ssh-keygen -Lf $KEY_FILE | awk 'NR==7{print $5}')
+    DATE_NOW=$(date +"%Y-%m-%dT%T")
+    if [[ "$DATE_NOW" > "$CERT" ]]; then
+        echo "Your midway has expired."
+        return 1
+    fi
+
+    return 0
+
+}
+
+check_midway_cert() {
+    if is_midway_cert_present; then
+        echo "${colors[green]}Valid Midway cert present.${colors[reset]}"
+        return 0
+    fi
+
+    run_midway_auth
+
+    if is_midway_cert_present; then
+        echo "${colors[green]}Midway cert updated.${colors[reset]}"
+        return 0
+    else
+        echo "${colors[red]}Midway cert couldn't be updated.${colors[reset]}"
+        return 1
+    fi
+}
+
+auth() {
+    check_kerberos
+    check_midway_cert
+}
