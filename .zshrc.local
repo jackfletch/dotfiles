@@ -1,0 +1,20 @@
+if [ -f /apollo/env/envImprovement/var/zshrc ]; then
+    . /apollo/env/envImprovement/var/zshrc
+fi
+
+export BRAZIL_WORKSPACE_DEFAULT_LAYOUT=short
+
+for env in SDETools envImprovement AmazonAwsCli OdinTools; do
+    if [[ -d /apollo/env/$env ]]; then
+        export PATH=$PATH:/apollo/env/$env/bin
+    fi
+done
+
+WORKSPACES_ROOT="${HOME}/workplace"
+
+autoload -Uz compinit
+compinit -i
+
+function wp() { cd $WORKSPACES_ROOT/$1; }
+_wp() { _files -W  $WORKSPACES_ROOT;  }
+compdef _wp wp

@@ -1,4 +1,6 @@
 if [[ -z $TMUX ]]; then
+    export PATH=$HOME/.toolbox/bin:$PATH
+    export PATH="/usr/local/opt/node@12/bin:$PATH"
 fi
 
 export PATH=$HOME/bin:$PATH
