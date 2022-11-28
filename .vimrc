@@ -275,7 +275,7 @@ function! GetGitBranchName()
     let branchName = ""
 
     if exists("g:loaded_fugitive")
-        let head = fugitive#head(6)
+        let head = FugitiveHead(6)
         if head == ""
             return head
         endif
