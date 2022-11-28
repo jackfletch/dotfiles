@@ -37,6 +37,8 @@ done;
 
 # Add tab completion for many Bash commands
 #
+# Adopted from https://github.com/danemacmillan/dotfiles/blob/46650938/home/.bashrc#L221-L264.
+#
 # Note that these dotfiles expect `bash_completion@2`, which fully leverages
 # non-eager completion loading from the core library, as well as using the user
 # path at ${XDG_DATA_HOME}/bash-completion/completions. That path can be used to
