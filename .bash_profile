@@ -82,12 +82,13 @@ elif [ -r /etc/profile.d/bash_completion.sh ]; then
 fi;
 
 # Enable tab completion for `g` by marking it as an alias for `git`
-if [ -f /usr/share/bash-completion/completions/git ]; then
-    . /usr/share/bash-completion/completions/git;
-fi;
-if type __git_main &> /dev/null; then
-    # __git_complete g __git_main;
-    __git_complete g git;
+#
+# In case git completions are non-eagerly loaded and have not been sourced yet,
+# load git's `__git_complete` and call `__git_complete g git`. This is done
+# using bash-completion's `_xfunc` utility function.
+# See: https://github.com/scop/bash-completion/blob/895386de/bash_completion#L2717-L2733
+if type _xfunc &> /dev/null; then
+    _xfunc git __git_complete g git;
 fi;
 
 # Enable tab completion for `k` by marking it as an alias for `kubectl`
