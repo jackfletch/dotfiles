@@ -36,12 +36,31 @@ for option in autocd globstar; do
 done;
 
 # Add tab completion for many Bash commands
-if which brew &> /dev/null && [ -r "$(brew --prefix)/etc/profile.d/bash_completion.sh" ]; then
-    # Ensure existing Homebrew v1 completions continue to work
-    export BASH_COMPLETION_COMPAT_DIR="$(brew --prefix)/etc/bash_completion.d";
-    source "$(brew --prefix)/etc/profile.d/bash_completion.sh";
-elif [ -f /etc/bash_completion ]; then
-    source /etc/bash_completion;
+#
+# Note that these dotfiles expect `bash_completion@2`, which fully leverages
+# non-eager completion loading from the core library, as well as using the user
+# path at ${XDG_DATA_HOME}/bash-completion/completions. That path can be used to
+# override any non-eager completion by simply creating a file that matches the
+# utility's name.
+#
+# Read: https://github.com/scop/bash-completion#faq
+#
+# Add `time` to beginning of source line to see real time.
+#
+# For MacOS, use homebrew's `bash-completion@2` package, which is significantly
+# faster than original `bash-completion` package.
+# Read: https://superuser.com/a/1393343/496301
+#
+# This completion sourcing exclusively support version 2, and provides
+# fallback support for any utilities that have not updated, using the
+# `$BASH_COMPLETION_COMPAT_DIR` path. Multiple locations are searched: the
+# usual MacOS path is first checked, then a common path on Linux systems.
+if [ -r /usr/local/etc/profile.d/bash_completion.sh ]; then
+    export BASH_COMPLETION_COMPAT_DIR="/usr/local/etc/bash_completion.d";
+    source /usr/local/etc/profile.d/bash_completion.sh;
+elif [ -r /etc/profile.d/bash_completion.sh ]; then
+    export BASH_COMPLETION_COMPAT_DIR="/etc/bash_completion.d";
+    source /etc/profile.d/bash_completion.sh;
 fi;
 
 # Enable tab completion for `g` by marking it as an alias for `git`
