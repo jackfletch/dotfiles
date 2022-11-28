@@ -55,6 +55,22 @@ done;
 # fallback support for any utilities that have not updated, using the
 # `$BASH_COMPLETION_COMPAT_DIR` path. Multiple locations are searched: the
 # usual MacOS path is first checked, then a common path on Linux systems.
+#
+# Additionally, the $BASH_COMPLETION_USER_FILE environment variable is set,
+# which by default points to `~/.bash_completion`, but instead has been moved to
+# an XDG directory. Note that this user file is sourced eagerly as well, so
+# should not be used, except in cases where a popular tool does not offer a
+# better alternative. For the purpose of distinguishing old-style eager
+# completions from modern non-eager completions, this user completion file has
+# been added to a path under $XDG_CONFIG_HOME.
+#
+# Non-eager user completions are available under the new path, under
+# $XDG_DATA_HOME. This is where all new completions should be added. Note that
+# it is hardcoded to look in a "completions" subdirectory of
+# $BASH_COMPLETION_USER_DIR, so in this configuration, the path would expand
+# to $BASH_COMPLETION_USER_DIR/completions.
+export BASH_COMPLETION_USER_DIR="${XDG_DATA_HOME}/bash-completion"
+export BASH_COMPLETION_USER_FILE="${XDG_CONFIG_HOME}/bash-completion/bash_completion"
 if [ -r /usr/local/etc/profile.d/bash_completion.sh ]; then
     export BASH_COMPLETION_COMPAT_DIR="/usr/local/etc/bash_completion.d";
     source /usr/local/etc/profile.d/bash_completion.sh;
