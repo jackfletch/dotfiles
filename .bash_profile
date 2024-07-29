@@ -88,9 +88,12 @@ done;
 # to $BASH_COMPLETION_USER_DIR/completions.
 export BASH_COMPLETION_USER_DIR="${XDG_DATA_HOME}/bash-completion"
 export BASH_COMPLETION_USER_FILE="${XDG_CONFIG_HOME}/bash-completion/bash_completion"
-if [ -r /usr/local/etc/profile.d/bash_completion.sh ]; then
-    export BASH_COMPLETION_COMPAT_DIR="/usr/local/etc/bash_completion.d";
-    source /usr/local/etc/profile.d/bash_completion.sh;
+if command -v brew &> /dev/null; then
+    declare BASH_COMPLETION_PATH="$(brew --prefix 2> /dev/null)/etc/profile.d/bash_completion.sh";
+    if [ -r "$BASH_COMPLETION_PATH" ]; then
+        export BASH_COMPLETION_COMPAT_DIR="$(brew --prefix)/etc/bash_completion.d";
+        source $BASH_COMPLETION_PATH;
+    fi
 elif [ -r /etc/profile.d/bash_completion.sh ]; then
     export BASH_COMPLETION_COMPAT_DIR="/etc/bash_completion.d";
     source /etc/profile.d/bash_completion.sh;

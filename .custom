@@ -18,6 +18,8 @@ alias bwsroot='cd $(brazil-path workspace-root 2>/dev/null)'
 
 alias ws='cd $WORKSPACES_ROOT'
 
+source $HOME/.brazil_completion/bash_completion
+
 # Brazil Java SDK runtime (Corretto 8/OpenJDK 8)
 # export JAVA_HOME=/Library/Java/JavaVirtualMachines/amazon-corretto-8.jdk/Contents/Home
 
@@ -49,9 +51,9 @@ run_ssh_agent_if_not_running() {
 }
 
 run_midway_auth() {
-    killall ssh-agent
-
-    eval $(ssh-agent | grep -v "echo Agent pid") && midway-command && ssh-add -D && ssh-add
+    mwinit -d
+    midway-command
+    print_midway_status
 }
 
 check_kerberos() {
@@ -87,44 +89,78 @@ check_kerberos() {
     fi
 }
 
-is_midway_cert_present () {
-    # https://w.amazon.com/index.php/NextGenMidway/UserGuide#When_does_.22.7E.2F.midway.2Fcookie.22_expire.3F
+print_midway_status () {
     MIDWAY_COOKIE_FILE=~/.midway/cookie
     if [ ! -f $MIDWAY_COOKIE_FILE ]; then
         echo "$MIDWAY_COOKIE_FILE not found"
-        return 1
+    else
+        # echo "[DEBUG] print_midway_status: Printing expiration stati of Midway cookies"
+        cat $MIDWAY_COOKIE_FILE | grep amazon | awk  'BEGIN{"date +%s"| getline date;OFS="\t";} {  if ( $5+0 > date+0 ) {  status="VALID"; } else { status="EXPIRED"; };  "date -j -f %s "$5" +%Y-%m-%d %H:%M:%S"| getline expdate; print status, expdate , $1, $6}'  | sort | column -t
     fi
-
-    if [ $(grep HttpOnly_midway-auth.amazon.com ${MIDWAY_COOKIE_FILE} | cut -d $'\t' -f 5) -lt $( date  +%s ) ]; then
-        return 1
-    fi
-
-    KEY_FILE="$HOME/.ssh/id_rsa-cert.pub"
-    if [ ! -f $KEY_FILE ]; then
-        echo "$KEY_FILE not found"
-        return 1
-    fi
-
-    CERT=$(ssh-keygen -Lf $KEY_FILE | awk 'NR==7{print $5}')
-    DATE_NOW=$(date +"%Y-%m-%dT%T")
-    if [[ "$DATE_NOW" > "$CERT" ]]; then
-        echo "Your midway has expired."
-        return 1
-    fi
-
-    return 0
-
 }
 
-check_midway_cert() {
-    if is_midway_cert_present; then
+is_midway_valid () {
+    # https://w.amazon.com/index.php/NextGenMidway/UserGuide#When_does_.22.7E.2F.midway.2Fcookie.22_expire.3F
+    MIDWAY_COOKIE_FILE=~/.midway/cookie
+    if [ ! -f $MIDWAY_COOKIE_FILE ]; then
+        return 1
+    fi
+
+    echo "[DEBUG] is_midway_valid: Checking for AEA in Midway's cookie file."
+    if (( $(cat ${MIDWAY_COOKIE_FILE} | grep amazon | grep -v tpm_metrics | grep -v amazon_enterprise_access | wc -l ) == 0 )); then
+        return 1
+    fi
+
+    echo "[DEBUG] is_midway_valid: Checking that AEA in Midway's cookie file is not expired."
+    while read COOKIE_LINE; do
+        if [ $(echo $COOKIE_LINE | cut -d ' ' -f 5) -lt $( date  +%s ) ]; then
+            return 1
+        fi
+    done <<< $(cat ${MIDWAY_COOKIE_FILE} | grep amazon | grep -v tpm_metrics | grep -v amazon_enterprise_access)
+
+    for CERT_NAME in "$@"
+    do
+        # Check if there's any cookie with required CERT_NAME
+        echo "[DEBUG] is_midway_valid: Checking certificate \`$CERT_NAME\`."
+        check_cookie=`cat ${MIDWAY_COOKIE_FILE} | grep amazon | grep "$CERT_NAME"`
+        if [ -z "$check_cookie" ]; then
+            # echo "[DEBUG] is_midway_valid: cookie does not exist."
+            return 1
+        fi
+
+        while read COOKIE_LINE; do
+            if [ $(echo $COOKIE_LINE | cut -d ' ' -f 5) -lt $( date  +%s ) ]; then
+                # echo "[DEBUG] is_midway_valid: cookie expired."
+                return 1
+            fi
+        done <<< $(cat ${MIDWAY_COOKIE_FILE} | grep amazon | grep "$CERT_NAME")
+    done
+
+    return
+}
+
+is_midway_valid_exclude_aea () {
+    is_midway_valid
+}
+
+is_midway_valid_check_aea () {
+    is_midway_valid amazon_enterprise_access
+}
+
+check_refresh_midway() {
+    print_midway_status;
+
+    MIDWAY_CHECK_FN=${1:-is_midway_valid}
+    echo "[DEBUG] check_refresh_midway: MIDWAY_CHECK_FN: $MIDWAY_CHECK_FN"
+    if $MIDWAY_CHECK_FN; then
         echo "${colors[green]}Valid Midway cert present.${colors[reset]}"
         return 0
+    else
+        echo "${colors[yellow]}Midway cert missing. Refreshing now.${colors[reset]}"
     fi
 
     run_midway_auth
-
-    if is_midway_cert_present; then
+    if $MIDWAY_CHECK_FN; then
         echo "${colors[green]}Midway cert updated.${colors[reset]}"
         return 0
     else
@@ -133,7 +169,60 @@ check_midway_cert() {
     fi
 }
 
-auth() {
+auth-no-aea() {
     check_kerberos
-    check_midway_cert
+    check_refresh_midway is_midway_valid_exclude_aea
 }
+
+auth-aea-v1() {
+    check_kerberos
+    check_refresh_midway is_midway_valid_check_aea
+    print_midway_status
+}
+
+auth-aea() {
+    check_kerberos
+
+    echo "[DEBUG] auth-aea: Refreshing Midway without AEA."
+    check_refresh_midway is_midway_valid_exclude_aea
+
+    echo "[DEBUG] auth-aea: Running is_midway_valid."
+    if is_midway_valid amazon_enterprise_access; then
+        echo "[DEBUG] auth-aea: is_midway_valid amazon_enterprise_access true."
+        return $TRUE
+    fi
+
+    MIDWAY_COOKIE_FILE=~/.midway/cookie
+    if [ ! -f $MIDWAY_COOKIE_FILE ]; then
+        echo "$MIDWAY_COOKIE_FILE not found"
+    else
+        sed -i '' '/amazon_enterprise_access/d' $MIDWAY_COOKIE_FILE
+    fi
+
+    echo "[DEBUG] auth-aea: Restoring JWT token."
+    jwt=$(/usr/local/amazon/bin/acme_amazon_enterprise_access getAcmeDataLongLived | jq --exit-status -r '.Jwt')
+    if (( $(echo $jwt | wc -c) > 2500 )); then
+        for domain in {"auth.midway.amazon.dev","auth.midway.aws.a2z.com","auth.midway.aws.dev","midway-auth.amazon.com"}; do
+            echo -e "#HttpOnly_.${domain}\tTRUE\t/\tTRUE\t$(date -v '+2H' '+%s')\tamazon_enterprise_access\t$jwt" >> ~/.midway/cookie
+        done
+    else
+        auth-aea-v1
+    fi
+
+    print_midway_status
+}
+
+auth() {
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        auth-aea
+    else
+        auth-no-aea
+    fi
+}
+
+# WORKSPACES_ROOT="/home/fletcjac/workplace"
+# function wp() { cd $WORKSPACES_ROOT/$1; }
+# _wp() { _files -W $WORKSPACES_ROOT;  }
+# complete -F _wp wp
+
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/amazon-corretto-17.jdk/Contents/Home
