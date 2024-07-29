@@ -24,10 +24,12 @@
     s = status -s                               # View the current working tree status using the short format
 
     # Colorful logs and graphs
-    g = log --graph --pretty=custom             # Show custom graph.
     l = log --pretty=custom                     # Show custom log.
-    lg = log --graph --pretty=custom
-    lga = !"git lg --all"
+
+    lg-base = log --graph --pretty=custom
+    g = !"git lg-base"                          # Show custom log graph.
+    lg = !"git lg-base --all -n 20"
+    lga = !"git lg-base --all"
     lg-short = !"git lga --simplify-by-decoration"
 
     # Show verbose output about branches, remotes, or tags
