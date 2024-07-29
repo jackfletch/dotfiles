@@ -213,6 +213,10 @@
     # change to maching for machines with older versions of git 1.x.x
     default = simple
 
+[rerere]
+
+    enabled = true
+
 [user]
 
     # Do not guess the user's identity.
