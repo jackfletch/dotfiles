@@ -55,6 +55,11 @@ run_midway_auth() {
 }
 
 check_kerberos() {
+    # Skip Kerberos check on MacOS
+    if  [[ "$OSTYPE" == "darwin"* ]]; then
+        return
+    fi
+
     if klist -s; then
         echo "${colors[green]}Valid Kerberos ticket exists. ${colors[reset]}"
         return
