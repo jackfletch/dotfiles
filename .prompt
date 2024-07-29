@@ -84,6 +84,7 @@ prompt_git_status() {
 # Define colors used in prompt
 # TODO: replace associative array to be compatible with Bash versions < 4.0
 declare -A colors
+declare -A colors_escaped
 
 # The following colors assume use of a terminal with a solarized color palette
 # like gnome-terminal. If not using a solarized terminal palette, use the colors
@@ -137,28 +138,28 @@ fi;
 # Wrap color sequences in escaped brackets so shell doesn't count them towards
 # the character length of the prompt. See a detailed explanation here:
 # https://unix.stackexchange.com/a/124409.
-format_colors() {
+generate_escaped_colors() {
     if [ -n "$ZSH_VERSION" ]; then emulate -L ksh; fi
 
     for i in "${!colors[@]}"; do
-        colors[$i]="$escapeLeft${colors[$i]}$escapeRight"
+        colors_escaped[$i]="$escapeLeft${colors[$i]}$escapeRight"
     done
 }
 
-format_colors
+generate_escaped_colors
 
 # Highlight the username when logged in as root.
 if [[ "${USER}" == "root" ]]; then
-    userStyle="${colors[red]}";
+    userStyle="${colors_escaped[red]}";
 else
-    userStyle="${colors[orange]}";
+    userStyle="${colors_escaped[orange]}";
 fi;
 
 # Highlight the hostname when connected via SSH.
 if [[ "${SSH_TTY}" ]]; then
-    hostStyle="${colors[bold]}${colors[red]}";
+    hostStyle="${colors_escaped[bold]}${colors_escaped[red]}";
 else
-    hostStyle="${colors[yellow]}";
+    hostStyle="${colors_escaped[yellow]}";
 fi;
 
 if [ -n "$ZSH_VERSION" ]; then
@@ -166,29 +167,29 @@ if [ -n "$ZSH_VERSION" ]; then
 fi;
 
 # Set the terminal title and prompt.
-PS1="${colors[reset]}"
+PS1="${colors_escaped[reset]}"
 # PS1+="\[\e]0;\w\007\]"; # terminal title (set to working directory full path)
-PS1+="${userStyle}$username${colors[reset]}"; # username
+PS1+="${userStyle}$username${colors_escaped[reset]}"; # username
 PS1+="@";
-PS1+="${hostStyle}$hostname${colors[reset]}"; # host
+PS1+="${hostStyle}$hostname${colors_escaped[reset]}"; # host
 PS1+=" ";
-PS1+="${colors[green]}[$workdir]"; # working directory full path
+PS1+="${colors_escaped[green]}[$workdir]"; # working directory full path
 PS1+=" ";
-PS1+="${colors[cyan]}"
+PS1+="${colors_escaped[cyan]}"
 PS1+='$(prompt_git_branch)'; # git branch
-PS1+="${colors[blue]} "
+PS1+="${colors_escaped[blue]} "
 PS1+='$(prompt_git_status)'; # git status
 PS1+=$'\n';
-PS1+="${colors[white]}"
+PS1+="${colors_escaped[white]}"
 PS1+=$'\u2446' # prompt icon (⑆)
 PS1+=" ";
-PS1+="${colors[reset]}";
+PS1+="${colors_escaped[reset]}";
 export PS1;
 
-PS2="${colors[yellow]}→ ${colors[reset]}";
+PS2="${colors_escaped[yellow]}→ ${colors_escaped[reset]}";
 export PS2;
 
-unset colors;
+unset colors_escaped;
 unset userStyle;
 unset hostStyle;
 unset username;
