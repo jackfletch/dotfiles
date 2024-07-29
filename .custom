@@ -60,7 +60,7 @@ check_kerberos() {
         return
     fi
 
-    if [ -f $HOME/kinit.exp ]; then
+    if command -v expect &> /dev/null && [ -f $HOME/kinit.exp ]; then
         /usr/bin/expect $HOME/kinit.exp
     else
         kinit -R
